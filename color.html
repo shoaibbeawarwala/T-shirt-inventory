@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-Shirt Inventory Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 30px auto;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e6e6e6;
+        }
+
+        .color-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .remove-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .remove-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+        }
+
+        .color-icon.red { background-color: red; }
+        .color-icon.blue { background-color: blue; }
+        .color-icon.green { background-color: green; }
+        .color-icon.yellow { background-color: yellow; }
+        .color-icon.black { background-color: black; }
+        .color-icon.navy-blue { background-color: navy; }
+        .color-icon.royal-blue { background-color: royalblue; }
+        .color-icon.mehron { background-color: maroon; }
+        .color-icon.sky-blue { background-color: skyblue; }
+        .color-icon.grey { background-color: grey; }
+        .color-icon.bottle-green { background-color: darkgreen; }
+
+    </style>
+</head>
+<body>
+    <h1>T-Shirt Inventory Management</h1>
+
+    <h2>Polyester</h2>
+    <table id="polyesterTable">
+        <tr>
+            <th></th>
+            <th>M</th>
+            <th>L</th>
+            <th>XL</th>
+            <th>XXL</th>
+            <th>XXXL</th>
+            <th>Total</th>
+            <th>Actions</th>
+            <th>Remove</th>
+        </tr>
+    </table>
+    <p id="polyesterTotals"></p>
+
+    <h2>Matty</h2>
+    <table id="matiTable">
+        <tr>
+            <th></th>
+            <th>M</th>
+            <th>L</th>
+            <th>XL</th>
+            <th>XXL</th>
+            <th>XXXL</th>
+            <th>Total</th>
+            <th>Actions</th>
+            <th>Remove</th>
+        </tr>
+    </table>
+    <p id="matiTotals"></p>
+
+    <br>
+    <button onclick="addTShirt()">Add T-Shirt</button>
+
+    <script>
+        let polyesterInventory = JSON.parse(localStorage.getItem('polyesterInventory')) || [
+            { color: 'Red', sizes: { M: 5, L: 3, XL: 2, XXL: 1, XXXL: 0 } },
+            { color: 'Blue', sizes: { M: 8, L: 6, XL: 4, XXL: 2, XXXL: 1 } },
+            { color: 'Black', sizes: { M: 3, L: 5, XL: 2, XXL: 1, XXXL: 0 } },
+            { color: 'Navy Blue', sizes: { M: 6, L: 4, XL: 3, XXL: 2, XXXL: 1 } },
+            { color: 'Royal Blue', sizes: { M: 2, L: 3, XL: 4, XXL: 1, XXXL: 0 } }
+        ];
+
+        let matiInventory = JSON.parse(localStorage.getItem('matiInventory')) || [
+            { color: 'Green', sizes: { M: 10, L: 8, XL: 6, XXL: 4, XXXL: 2 } },
+            { color: 'Yellow', sizes: { M: 3, L: 5, XL: 2, XXL: 1, XXXL: 0 } },
+            { color: 'Mehron', sizes: { M: 4, L: 6, XL: 3, XXL: 2, XXXL: 1 } },
+            { color: 'Sky Blue', sizes: { M: 7, L: 5, XL: 4, XXL: 3, XXXL: 2 } },
+            { color: 'Grey', sizes: { M: 2, L: 4, XL: 3, XXL: 1, XXXL: 0 } },
+            { color: 'Bottle Green', sizes: { M: 5, L: 3, XL: 2, XXL: 1, XXXL: 0 } }
+        ];
+
+        function renderTable(inventory, tableId) {
+            const table = document.getElementById(tableId);
+            table.innerHTML = `
+                <tr>
+                    <th></th>
+                    <th>M</th>
+                    <th>L</th>
+                    <th>XL</th>
+                    <th>XXL</th>
+                    <th>XXXL</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                    <th>Remove</th>
+                </tr>
+            `;
+
+            const totals = { M: 0, L: 0, XL: 0, XXL: 0, XXXL: 0 };
+
+            inventory.forEach((tshirt, index) => {
+                const row = table.insertRow();
+                const colorCell = row.insertCell();
+                colorCell.innerHTML = `<span class="color-icon ${tshirt.color.toLowerCase().replace(' ', '-')}"></span>${tshirt.color}`;
+                const sizeM = row.insertCell();
+                const mQuantity = tshirt.sizes.M;
+                sizeM.innerHTML = `<input type="number" class="quantity-input" value="${mQuantity}" onchange="updateQuantity('${tshirt.color}', '${tableId}', 'M', this.value)">`;
+                totals.M += mQuantity;
+                const sizeL = row.insertCell();
+                const lQuantity = tshirt.sizes.L;
+                sizeL.innerHTML = `<input type="number" class="quantity-input" value="${lQuantity}" onchange="updateQuantity('${tshirt.color}', '${tableId}', 'L', this.value)">`;
+                totals.L += lQuantity;
+                const sizeXL = row.insertCell();
+                const xlQuantity = tshirt.sizes.XL;
+                sizeXL.innerHTML = `<input type="number" class="quantity-input" value="${xlQuantity}" onchange="updateQuantity('${tshirt.color}', '${tableId}', 'XL', this.value)">`;
+                totals.XL += xlQuantity;
+                const sizeXXL = row.insertCell();
+                const xxlQuantity = tshirt.sizes.XXL;
+                sizeXXL.innerHTML = `<input type="number" class="quantity-input" value="${xxlQuantity}" onchange="updateQuantity('${tshirt.color}', '${tableId}', 'XXL', this.value)">`;
+                totals.XXL += xxlQuantity;
+                const sizeXXXL = row.insertCell();
+                const xxxlQuantity = tshirt.sizes.XXXL;
+                sizeXXXL.innerHTML = `<input type="number" class="quantity-input" value="${xxxlQuantity}" onchange="updateQuantity('${tshirt.color}', '${tableId}', 'XXXL', this.value)">`;
+                totals.XXXL += xxxlQuantity;
+                const totalCell = row.insertCell();
+                totalCell.textContent = mQuantity + lQuantity + xlQuantity + xxlQuantity + xxxlQuantity;
+                const actionCell = row.insertCell();
+                actionCell.colSpan = 0;
+                const removeCell = row.insertCell();
+                removeCell.innerHTML = `<button class="remove-btn" onclick="removeTShirt('${tshirt.color}', '${tableId}', ${index})">Remove</button>`;
+            });
+
+            const totalRow = table.insertRow();
+            totalRow.insertCell().textContent = 'Total';
+            totalRow.insertCell().textContent = totals.M;
+            totalRow.insertCell().textContent = totals.L;
+            totalRow.insertCell().textContent = totals.XL;
+            totalRow.insertCell().textContent = totals.XXL;
+            totalRow.insertCell().textContent = totals.XXXL;
+            totalRow.insertCell().textContent = totals.M + totals.L + totals.XL + totals.XXL + totals.XXXL;
+            totalRow.insertCell().colSpan = 2;
+
+            const totalsElement = document.getElementById(`${tableId.replace('Table', 'Totals')}`);
+            totalsElement.textContent = `Total ${tableId === 'polyesterTable' ? 'Polyester' : 'Mati'} T-Shirts: ${totals.M + totals.L + totals.XL + totals.XXL + totals.XXXL}`;
+        }
+
+        function updateQuantity(color, tableId, size, value) {
+            const inventory = tableId === 'polyesterTable' ? polyesterInventory : matiInventory;
+            const tshirt = inventory.find(t => t.color === color);
+            if (tshirt) {
+                const newValue = parseInt(value, 10);
+                if (!isNaN(newValue) && newValue >= 0) {
+                    tshirt.sizes[size] = newValue;
+                    renderTable(inventory, tableId);
+                    saveInventory();
+                }
+            }
+        }
+
+        function addTShirt() {
+            const material = prompt('Enter material (Polyester or Mati):');
+            const color = prompt('Enter color:');
+            const quantity = {
+                M: parseInt(prompt('Enter quantity for M:')),
+                L: parseInt(prompt('Enter quantity for L:')),
+                XL: parseInt(prompt('Enter quantity for XL:')),
+                XXL: parseInt(prompt('Enter quantity for XXL:')),
+                XXXL: parseInt(prompt('Enter quantity for XXXL:'))
+            };
+
+            if (material && color && !isNaN(quantity.M) && !isNaN(quantity.L) && !isNaN(quantity.XL) && !isNaN(quantity.XXL) && !isNaN(quantity.XXXL)) {
+                const inventory = material.toLowerCase() === 'polyester' ? polyesterInventory : matiInventory;
+                inventory.push({ color, sizes: quantity });
+                renderTable(inventory, `${material.toLowerCase()}Table`);
+                saveInventory();
+            } else {
+                alert('Invalid input');
+            }
+        }
+
+        function removeTShirt(color, tableId, index) {
+            const inventory = tableId === 'polyesterTable' ? polyesterInventory : matiInventory;
+            inventory.splice(index, 1);
+            renderTable(inventory, tableId);
+            saveInventory();
+        }
+
+        function saveInventory() {
+            localStorage.setItem('polyesterInventory', JSON.stringify(polyesterInventory));
+            localStorage.setItem('matiInventory', JSON.stringify(matiInventory));
+        }
+
+        function init() {
+            renderTable(polyesterInventory, 'polyesterTable');
+            renderTable(matiInventory, 'matiTable');
+        }
+
+        init();
+    </script>
+</body>
+</html>
